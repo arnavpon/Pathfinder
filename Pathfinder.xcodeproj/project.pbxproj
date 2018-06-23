@@ -15,6 +15,8 @@
 		B2B3688C20DE78E400082543 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2B3688A20DE78E400082543 /* LaunchScreen.storyboard */; };
 		B2B3689720DE78E400082543 /* PathfinderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B3689620DE78E400082543 /* PathfinderTests.swift */; };
 		B2B368A220DE78E400082543 /* PathfinderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368A120DE78E400082543 /* PathfinderUITests.swift */; };
+		B2B368B320DE793500082543 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2B368B220DE793500082543 /* MapKit.framework */; };
+		B2B368B520DE796D00082543 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2B368B420DE796D00082543 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,10 @@
 		B2B3689D20DE78E400082543 /* PathfinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PathfinderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2B368A120DE78E400082543 /* PathfinderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathfinderUITests.swift; sourceTree = "<group>"; };
 		B2B368A320DE78E400082543 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2B368B220DE793500082543 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		B2B368B420DE796D00082543 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		B2B368BF20DE7A5F00082543 /* NetworkConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnection.swift; sourceTree = "<group>"; };
+		B2B368C120DE7A6B00082543 /* CoreLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLocationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +62,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2B368B520DE796D00082543 /* CoreLocation.framework in Frameworks */,
+				B2B368B320DE793500082543 /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +91,7 @@
 				B2B3689520DE78E400082543 /* PathfinderTests */,
 				B2B368A020DE78E400082543 /* PathfinderUITests */,
 				B2B3687C20DE78D800082543 /* Products */,
+				B2B368AF20DE793100082543 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -99,13 +108,10 @@
 		B2B3687D20DE78D800082543 /* Pathfinder */ = {
 			isa = PBXGroup;
 			children = (
-				B2B3687E20DE78D800082543 /* AppDelegate.swift */,
-				B2B3688020DE78D800082543 /* ViewController.swift */,
-				B2B3688220DE78D800082543 /* Main.storyboard */,
-				B2B3688820DE78E400082543 /* Assets.xcassets */,
-				B2B3688A20DE78E400082543 /* LaunchScreen.storyboard */,
-				B2B3688D20DE78E400082543 /* Info.plist */,
-				B2B3688520DE78D800082543 /* Pathfinder.xcdatamodeld */,
+				B2B368BB20DE7A1800082543 /* Data Models */,
+				B2B368BC20DE7A1E00082543 /* View Controllers */,
+				B2B368BE20DE7A4A00082543 /* Storyboards */,
+				B2B368BD20DE7A2600082543 /* Support Files */,
 			);
 			path = Pathfinder;
 			sourceTree = "<group>";
@@ -126,6 +132,52 @@
 				B2B368A320DE78E400082543 /* Info.plist */,
 			);
 			path = PathfinderUITests;
+			sourceTree = "<group>";
+		};
+		B2B368AF20DE793100082543 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B2B368B420DE796D00082543 /* CoreLocation.framework */,
+				B2B368B220DE793500082543 /* MapKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B2B368BB20DE7A1800082543 /* Data Models */ = {
+			isa = PBXGroup;
+			children = (
+				B2B3688520DE78D800082543 /* Pathfinder.xcdatamodeld */,
+				B2B368C120DE7A6B00082543 /* CoreLocationManager.swift */,
+				B2B368BF20DE7A5F00082543 /* NetworkConnection.swift */,
+			);
+			path = "Data Models";
+			sourceTree = "<group>";
+		};
+		B2B368BC20DE7A1E00082543 /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				B2B3688020DE78D800082543 /* ViewController.swift */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		B2B368BD20DE7A2600082543 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				B2B3687E20DE78D800082543 /* AppDelegate.swift */,
+				B2B3688820DE78E400082543 /* Assets.xcassets */,
+				B2B3688D20DE78E400082543 /* Info.plist */,
+			);
+			path = "Support Files";
+			sourceTree = "<group>";
+		};
+		B2B368BE20DE7A4A00082543 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				B2B3688A20DE78E400082543 /* LaunchScreen.storyboard */,
+				B2B3688220DE78D800082543 /* Main.storyboard */,
+			);
+			path = Storyboards;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -196,6 +248,11 @@
 				TargetAttributes = {
 					B2B3687A20DE78D800082543 = {
 						CreatedOnToolsVersion = 9.4.1;
+						SystemCapabilities = {
+							com.apple.Maps.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 					B2B3689120DE78E400082543 = {
 						CreatedOnToolsVersion = 9.4.1;

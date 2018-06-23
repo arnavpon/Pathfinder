@@ -1,9 +1,8 @@
-//
 //  ViewController.swift
 //  Pathfinder
-//
 //  Created by Arnav Pondicherry  on 6/23/18.
 //  Copyright © 2018 Arnav Pondicherry . All rights reserved.
+
 //
 
 import UIKit

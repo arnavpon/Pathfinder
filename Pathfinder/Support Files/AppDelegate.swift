@@ -1,9 +1,8 @@
-//
 //  AppDelegate.swift
 //  Pathfinder
-//
 //  Created by Arnav Pondicherry  on 6/23/18.
 //  Copyright © 2018 Arnav Pondicherry . All rights reserved.
+
 //
 
 import UIKit
@@ -13,7 +12,6 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
