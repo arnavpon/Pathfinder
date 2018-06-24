@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		4410ED4BFEFC3937901E2D56 /* Pods_Pathfinder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A214BBE186CFC913CE86260 /* Pods_Pathfinder.framework */; };
 		817D3F2D908BE4D3098D5E65 /* Pods_PathfinderTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 286F591E0D869106BC0B14F3 /* Pods_PathfinderTests.framework */; };
+		B253A58220E00D550035395B /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = B253A58120E00D550035395B /* Reachability.swift */; };
+		B253A58420E015950035395B /* DistanceAPIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B253A58320E015950035395B /* DistanceAPIHelper.swift */; };
+		B253A58620E02FC10035395B /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = B253A58520E02FC10035395B /* Place.swift */; };
+		B260009F20DF5CAD00E43E04 /* PathDisplayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B260009E20DF5CAC00E43E04 /* PathDisplayViewController.swift */; };
 		B2B3687F20DE78D800082543 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B3687E20DE78D800082543 /* AppDelegate.swift */; };
 		B2B3688120DE78D800082543 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B3688020DE78D800082543 /* ViewController.swift */; };
 		B2B3688420DE78D800082543 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B2B3688220DE78D800082543 /* Main.storyboard */; };
@@ -21,8 +25,6 @@
 		B2B368C320DE841A00082543 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B2B368C220DE841A00082543 /* Default-568h@2x.png */; };
 		B2B368C520DE872600082543 /* HelperFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368C420DE872600082543 /* HelperFunctions.swift */; };
 		B2B368C620DE8B8C00082543 /* NetworkConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368BF20DE7A5F00082543 /* NetworkConnection.swift */; };
-		B2B368C720DE8B9100082543 /* CoreLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368C120DE7A6B00082543 /* CoreLocationManager.swift */; };
-		B2B368C820DE8B9500082543 /* HelperFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368C420DE872600082543 /* HelperFunctions.swift */; };
 		B2B368CA20DE9BDD00082543 /* OptimalPathSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B368C920DE9BDD00082543 /* OptimalPathSearch.swift */; };
 		F8E66ECF8C3B3756925B47A9 /* Pods_PathfinderUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BCB530AA1CF88067137A5AE /* Pods_PathfinderUITests.framework */; };
 /* End PBXBuildFile section */
@@ -53,6 +55,10 @@
 		60C8CF4F1D61A168C63A481E /* Pods-PathfinderUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PathfinderUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PathfinderUITests/Pods-PathfinderUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		6A214BBE186CFC913CE86260 /* Pods_Pathfinder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pathfinder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD8CE69A897B2B81CB6A02F3 /* Pods-PathfinderUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PathfinderUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PathfinderUITests/Pods-PathfinderUITests.release.xcconfig"; sourceTree = "<group>"; };
+		B253A58120E00D550035395B /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
+		B253A58320E015950035395B /* DistanceAPIHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceAPIHelper.swift; sourceTree = "<group>"; };
+		B253A58520E02FC10035395B /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		B260009E20DF5CAC00E43E04 /* PathDisplayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathDisplayViewController.swift; sourceTree = "<group>"; };
 		B2B3687B20DE78D800082543 /* Pathfinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pathfinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2B3687E20DE78D800082543 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B2B3688020DE78D800082543 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -70,7 +76,6 @@
 		B2B368B220DE793500082543 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		B2B368B420DE796D00082543 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		B2B368BF20DE7A5F00082543 /* NetworkConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnection.swift; sourceTree = "<group>"; };
-		B2B368C120DE7A6B00082543 /* CoreLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreLocationManager.swift; sourceTree = "<group>"; };
 		B2B368C220DE841A00082543 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		B2B368C420DE872600082543 /* HelperFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperFunctions.swift; sourceTree = "<group>"; };
 		B2B368C920DE9BDD00082543 /* OptimalPathSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimalPathSearch.swift; sourceTree = "<group>"; };
@@ -175,8 +180,10 @@
 			isa = PBXGroup;
 			children = (
 				B2B3688520DE78D800082543 /* Pathfinder.xcdatamodeld */,
-				B2B368C120DE7A6B00082543 /* CoreLocationManager.swift */,
+				B253A58120E00D550035395B /* Reachability.swift */,
 				B2B368BF20DE7A5F00082543 /* NetworkConnection.swift */,
+				B253A58520E02FC10035395B /* Place.swift */,
+				B253A58320E015950035395B /* DistanceAPIHelper.swift */,
 				B2B368C920DE9BDD00082543 /* OptimalPathSearch.swift */,
 			);
 			path = "Data Models";
@@ -186,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				B2B3688020DE78D800082543 /* ViewController.swift */,
+				B260009E20DF5CAC00E43E04 /* PathDisplayViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -442,9 +450,12 @@
 				B2B368C520DE872600082543 /* HelperFunctions.swift in Sources */,
 				B2B368C620DE8B8C00082543 /* NetworkConnection.swift in Sources */,
 				B2B3688120DE78D800082543 /* ViewController.swift in Sources */,
+				B260009F20DF5CAD00E43E04 /* PathDisplayViewController.swift in Sources */,
+				B253A58220E00D550035395B /* Reachability.swift in Sources */,
 				B2B3687F20DE78D800082543 /* AppDelegate.swift in Sources */,
+				B253A58420E015950035395B /* DistanceAPIHelper.swift in Sources */,
 				B2B368CA20DE9BDD00082543 /* OptimalPathSearch.swift in Sources */,
-				B2B368C720DE8B9100082543 /* CoreLocationManager.swift in Sources */,
+				B253A58620E02FC10035395B /* Place.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,7 +464,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2B3689720DE78E400082543 /* PathfinderTests.swift in Sources */,
-				B2B368C820DE8B9500082543 /* HelperFunctions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

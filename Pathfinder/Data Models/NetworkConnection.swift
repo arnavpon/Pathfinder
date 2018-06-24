@@ -16,32 +16,9 @@ class NetworkConnection { //conforms to error reporting protocol
     fileprivate let postBody: Data? //optional POST request body
     fileprivate let blockContentTypeHeader: Bool //for POST request - REQUIRED for Nutrition API
     
-    // MARK: - Network Connectivity [CLASS METHOD]
-    
-    class func deviceIsConnectedToNetwork() -> Bool { //checks if Wifi is available; **does not work for Cellular Data apparently!
-        var zeroAddress = sockaddr_in(sin_len: 0, sin_family: 0, sin_port: 0, sin_addr: in_addr(s_addr: 0), sin_zero: (0, 0, 0, 0, 0, 0, 0, 0))
-        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
-        zeroAddress.sin_family = sa_family_t(AF_INET)
-        
-        let defaultRouteReachability = withUnsafePointer(to: &zeroAddress) {
-            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {zeroSockAddress in
-                SCNetworkReachabilityCreateWithAddress(nil, zeroSockAddress)
-            }
-        }
-        
-        var flags: SCNetworkReachabilityFlags = SCNetworkReachabilityFlags(rawValue: 0)
-        if SCNetworkReachabilityGetFlags(defaultRouteReachability!, &flags) == false {
-            return false
-        }
-        
-        let isReachable = flags == .reachable
-        let needsConnection = flags == .connectionRequired
-        return (isReachable) && !(needsConnection)
-    }
-    
     // MARK: - Initializers
     
-    init(url: URL) { //initialize w/ the URL to which the network request is being sent
+    init(url: URL) { //GET request - initialize w/ the URL to which the network request is being sent
         self.queryURL = url
         self.postBody = nil
         self.blockContentTypeHeader = false
@@ -86,14 +63,14 @@ class NetworkConnection { //conforms to error reporting protocol
                     // tell user to connect to internet
                 }
             } else {
-                if let err = error as? NSError {
-                    switch err.code {
+                if let e = error {
+                    switch (e as NSError).code {
                     case -1009:
                         print("[downloadJSON] No internet access was detected.")
                     case -1004:
                         print("[downloadJSON] Error - could not connect to SERVER!")
                     default:
-                        print("[downloadJSON] Process failed w/ error: \(String(describing: error)).")
+                        print("[downloadJSON] Process failed w/ error: \(e.localizedDescription)).")
                     }
                 }
             }

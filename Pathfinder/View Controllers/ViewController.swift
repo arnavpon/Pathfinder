@@ -3,7 +3,9 @@
 //  Created by Arnav Pondicherry  on 6/23/18.
 //  Copyright © 2018 Arnav Pondicherry . All rights reserved.
 
-// Allows user to select the locations for which to find a path
+// Allows user to select the locations for which to compute an optimal path (at least 3)
+
+// why isn't search bar showing as soon as page loads???
 
 import UIKit
 import GooglePlaces
@@ -11,19 +13,39 @@ import CoreLocation
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, UISearchBarDelegate, CLLocationManagerDelegate {
     
-    let searchController = UISearchController(searchResultsController: nil)  // nil -> use same view to display results
-    @IBOutlet weak var searchResultsTable: UITableView!
-    @IBOutlet weak var locationTable: UITableView!
-    @IBOutlet weak var determinePathBtn: UIButton!
+    let searchController = UISearchController(searchResultsController: nil)  // handles searches
+    @IBOutlet weak var searchResultsTable: UITableView!  // displays search results
+    @IBOutlet weak var locationTable: UITableView!  // determines selected locations
+    @IBOutlet weak var determinePathBtn: UIButton!  // computes optimal path
     
+    var intelligentAgent: OptimalPathSearch?  // handles search logic
+    var returnToStart: Bool = true  // indicates whether user will return to start @ end of trip
     let locationManager = CLLocationManager()  // handles location services logic
     var placesClient: GMSPlacesClient!  // handles Google Places SDK logic
-    var locationList: [String] = [String]()  // list of places selected to visit
+    var locationList = [Place]() { // list of places selected to visit
+        didSet {
+            if (locationList.count > 2) {  // enable btn after 2+ locations are added
+                determinePathBtn.isEnabled = true
+            } else {  // disable
+                determinePathBtn.isEnabled = false
+            }
+        }
+    }
     var filteredLocations = [GMSAutocompletePrediction]()  // filtered list for search bar
+    var currentLocation: CLLocationCoordinate2D? {  // current location
+        didSet {
+            if let loc = currentLocation {
+                print("Currently @ \(loc)")
+            }
+        }
+    }
     
-    // View Controller Methods
+    // MARK: - View Controller Methods
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        determinePathBtn.isEnabled = false  // disable to start
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationIsReappearing(_:)), name: NSNotification.Name("applicationWillEnterForeground"), object: nil)  // register for foreground appearance notification
         
         // Table View
         locationTable.delegate = self
@@ -33,46 +55,47 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         // Search Controller
         searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        //searchController.searchBar.frame = CGRect(x: 0, y: 200, width: self.view.frame.width, height: 50)
+        searchController.obscuresBackgroundDuringPresentation = false  // don't dim background
         searchController.searchBar.delegate = self  // set search BAR delegate
         searchController.searchBar.placeholder = "Find a Location"  // placeholder
         navigationItem.searchController = searchController  // not compatible w/ IB yet
         definesPresentationContext = true  // ensures bar doesn't stay on screen in different VC
         
+        // Location & Places logic:
         placesClient = GMSPlacesClient.shared()  // initialize client
         locationManager.delegate = self  // set CL delegate
-        locationManager.requestWhenInUseAuthorization()  // request permissions
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.requestLocation()  // get location
+        locationManager.requestWhenInUseAuthorization()  // request usage permission
+        getCurrentLocation()  // method to find location
+    }
+    
+    private func isLocationUnique(selectionIndex: Int, places: [GMSAutocompletePrediction]) -> Bool {  // determines if selection is unique address or chain (e.g. grocery store)
+        print("\nIs location unique?")
+        var copy = places  // make mutable copy
+        let selection = copy.remove(at: selectionIndex)  // remove place from array
+        for place in places {  // iterate through REMAINING places
+            print(place.attributedPrimaryText.string)
+            if (place.attributedPrimaryText.string.range(of: selection.attributedPrimaryText.string) != nil) {  // check if selection name is WHOLLY contained in other place name
+                print("NOT unique")
+                return false
+            }
         }
+        print("UNIQUE location!")
+        return true
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        // getCurrentPlace()  // Google Places method for getting current location
+    @objc
+    private func applicationIsReappearing(_ notification: Notification) {
+        getCurrentLocation()  // re-check for location
     }
     
-    func getCurrentPlace() {  // finds current location w/o GPS
-        placesClient.currentPlace(callback: { (placeLikelihoodList, error) -> Void in
-            if let error = error {
-                print("Pick Place error: \(error.localizedDescription)")
-                return
-            }
-            
-            if let placeLikelihoodList = placeLikelihoodList {  // get most likely place
-                let place = placeLikelihoodList.likelihoods.first?.place
-                if let place = place {
-                    print(place.name)
-                    print(place.formattedAddress?.components(separatedBy: ",").joined(separator: "\n"))
-                }
-            }
-        })
-    }
+    // MARK: - Table View Logic
     
-    // Table View Delegate
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat(40)
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -104,7 +127,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "locationCell", for: indexPath)
-            cell.textLabel?.text = locationList[indexPath.row]
+            cell.textLabel?.text = locationList[indexPath.row].name
             return cell
         }
     }
@@ -112,8 +135,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView == searchResultsTable {  // add selection to locationList
             if isFiltering() {  // make sure search bar is active
-                locationList.append(filteredLocations[indexPath.row].attributedFullText.string)
-                print(locationList)
+                let isUnique = isLocationUnique(selectionIndex: indexPath.row, places: filteredLocations)  // check if location is unique
+                if (isUnique) {  // UNIQUE - init Place w/ FULL name
+                    locationList.append(Place(name: filteredLocations[indexPath.row].attributedFullText.string, isUnique: isUnique))
+                    locationList.last!.findPlaceNearLocation(location: self.currentLocation!, completion: { (coordinates) in
+                        //
+                    })
+                } else { // NOT unique - init Place w/ PRIMARY name
+                    locationList.append(Place(name: filteredLocations[indexPath.row].attributedPrimaryText.string, isUnique: isUnique))
+                    locationList.last!.findPlaceNearLocation(location: self.currentLocation!, completion: { (coordinates) in
+                        //
+                    })
+                }
                 locationTable.reloadData()  // update UI
                 searchController.searchBar.text = nil  // clear text in search bar
                 searchController.searchBar.resignFirstResponder()  // exit search bar
@@ -126,9 +159,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.reloadData() // update UI
     }
     
-    // Search Controller Delegate
+    // MARK: - Search Controller Logic
+    
     func updateSearchResults(for searchController: UISearchController) {
-        print("Updating search results...")
         if !(searchBarIsEmpty()) {  // make sure there is text in the search bar
             searchResultsTable.isHidden = false  // reveal table
             placeAutocomplete(query: searchController.searchBar.text!)  // pass query -> Places handler
@@ -147,10 +180,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return searchController.isActive && !(searchBarIsEmpty())
     }
     
-    func placeAutocomplete(query: String) {  // Google Places SDK
-        print("\nAutocomplete on \(query)")
+    func placeAutocomplete(query: String) {  // Google Places SDK - returns up to 5 results
         let filter = GMSAutocompleteFilter()
-        filter.type = .establishment
+        filter.type = .noFilter  // filters the type of result received
         placesClient.autocompleteQuery(query, bounds: nil, filter: filter, callback: {(results, error) -> Void in
             if let error = error {
                 print("Autocomplete error: \(error)")
@@ -171,12 +203,64 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         searchResultsTable.isHidden = true  // hide table
     }
     
-    // Button Actions
-    @IBAction func determinePathBtnWasClicked(_ sender: Any) {
-        // logic to compute path - grab current location
+    // MARK: - Button/Switch Actions
+    
+    @IBAction func returnSwitchWasToggled(_ sender: Any) {
+        self.returnToStart = (sender as! UISwitch).isOn
     }
     
-    // Location Services
+    @IBAction func determinePathBtnWasClicked(_ sender: Any) {
+        if !(self.locationList.isEmpty) {
+            if let current = currentLocation {
+                self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: locationList, returnToStart: returnToStart) // initialize intelligent agent
+                performSegue(withIdentifier: "showPathDisplayVC", sender: nil)  // move to next page
+            }
+        }
+    }
     
+    // MARK: - Location Services
+    
+    func getCurrentLocation() {
+        getCurrentPlace()  // Google Places method for getting current location
+        if CLLocationManager.locationServicesEnabled() {  // CL - set properties & start updating
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.requestLocation()  // get location
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        print("[CLManager] Updated current location: ")
+        print(locations.first!.coordinate)
+        currentLocation = locations.first?.coordinate  // store current location
+        manager.stopUpdatingLocation()  // stop obtaining location after receiving current
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location manager failed w/ error: \(error.localizedDescription)")
+    }
+    
+    func getCurrentPlace() {  // Google Places method to obtain current location
+        print("[GooglePlaces API] Getting current place...")
+        placesClient.currentPlace(callback: { (placeLikelihoodList, error) -> Void in
+            if let error = error {
+                print("Pick Place error: \(error.localizedDescription)")
+                return
+            }
+            
+            if let placeLikelihoodList = placeLikelihoodList {  // get most likely place
+                let place = placeLikelihoodList.likelihoods.first?.place
+                if let place = place {
+                    self.currentLocation = place.coordinate  // set current location
+                }
+            }
+        })
+    }
+    
+    // MARK: - Navigation
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destination = segue.destination as! PathDisplayViewController
+        destination.intelligentAgent = self.intelligentAgent  // pass agent
+    }
 }
 

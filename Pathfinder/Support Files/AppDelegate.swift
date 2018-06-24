@@ -3,8 +3,6 @@
 //  Created by Arnav Pondicherry  on 6/23/18.
 //  Copyright © 2018 Arnav Pondicherry . All rights reserved.
 
-//
-
 import UIKit
 import CoreData
 import GooglePlaces
@@ -13,7 +11,7 @@ import GooglePlaces
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    let apiKey = "AIzaSyAtnfYd3rk2iP48WofSdi2AKktoyQ_8jJ0"
+    let apiKey = CONSTANT_API_KEY
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -33,6 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        NotificationCenter.default.post(name: NSNotification.Name("applicationWillEnterForeground"), object: nil)
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
