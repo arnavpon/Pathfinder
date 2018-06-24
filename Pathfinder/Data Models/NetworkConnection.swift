@@ -83,30 +83,23 @@ class NetworkConnection { //conforms to error reporting protocol
                     }
                 default:
                     print("Get request not successful. HTTP status code: \(httpResponse.statusCode)")
-                    self.reportAccessErrorForService(.Internet) //throw error
+                    // tell user to connect to internet
                 }
             } else {
-                switch (error as! NSError).code { //cast -> NSError to access code property
-                case -1009:
-                    print("[downloadJSON] No internet access was detected.")
-                    self.reportAccessErrorForService(.Internet)
-                case -1004:
-                    print("[downloadJSON] Error - could not connect to SERVER!")
-                    self.reportAccessErrorForService(.Localhost)
-                default:
-                    print("[downloadJSON] Process failed w/ error: \(error).")
+                if let err = error as? NSError {
+                    switch err.code {
+                    case -1009:
+                        print("[downloadJSON] No internet access was detected.")
+                    case -1004:
+                        print("[downloadJSON] Error - could not connect to SERVER!")
+                    default:
+                        print("[downloadJSON] Process failed w/ error: \(String(describing: error)).")
+                    }
                 }
             }
             completion(nil) //if operation fails, pass NIL back out
         }) 
         dataTask.resume() //begin task
-    }
-    
-    // MARK: - Error Handling
-    
-    func reportAccessErrorForService(_ service: ServiceTypes) { //fire notification for VC
-        let notification = Notification(name: Notification.Name(rawValue: BMN_Notification_DataReportingErrorProtocol_ServiceDidReportError), object: nil, userInfo: [BMN_DataReportingErrorProtocol_ServiceTypeKey: service.rawValue])
-        NotificationCenter.default.post(notification)
     }
     
 }

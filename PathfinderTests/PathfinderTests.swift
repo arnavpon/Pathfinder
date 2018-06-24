@@ -1,9 +1,8 @@
-//
 //  PathfinderTests.swift
 //  PathfinderTests
-//
 //  Created by Arnav Pondicherry  on 6/23/18.
 //  Copyright © 2018 Arnav Pondicherry . All rights reserved.
+
 //
 
 import XCTest
@@ -21,9 +20,12 @@ class PathfinderTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
+    func testEuclideanDistance() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+        let loc1 = (1.0, 1.0)
+        let loc2 = (1.0, 2.0)
+        XCTAssert(getEuclideanDistance(firstLocation: loc1, secondLocation: loc2) == 1)
     }
     
     func testPerformanceExample() {

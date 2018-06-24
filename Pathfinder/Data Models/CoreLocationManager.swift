@@ -3,8 +3,7 @@
 //  Created by Arnav Pondicherry  on 4/18/16.
 //  Copyright © 2016 Confluent Ideals. All rights reserved.
 
-// Central manager for all CoreLocation-related tasks. This object is called @ data gathering time to pull in current location information (a SINGLE time), before terminating the task.
-// Also handles iBeacons (when we start using them)!
+// Central manager for all CoreLocation-related tasks. This object is called @ path creation time to pull in current location information (a SINGLE time), before terminating the task.
 
 import Foundation
 import CoreLocation
@@ -22,7 +21,7 @@ class CoreLocationManager: NSObject, CLLocationManagerDelegate {
     
     // MARK: - External Access
     
-    func startStandardUpdates() -> Bool { //DELAY function call until needed by variable obj
+    func startStandardUpdates() -> Bool { // DELAY function call until needed by variable obj
         let enabled = CLLocationManager.locationServicesEnabled()
         print("[startStandardUpdates()] CoreLocation Access Available?: \(enabled).")
         if (enabled) { //location services IS enabled
@@ -35,11 +34,11 @@ class CoreLocationManager: NSObject, CLLocationManagerDelegate {
                 return true
             } else {
                 print("Device is NOT connected to wifi")
-                reportAccessErrorForService(.Internet) //throw error (no internet)
+                //throw error (no internet)
                 return false
             }
         }
-        reportAccessErrorForService(.CoreLocation) //throw error (no location services &/or internet)
+        //throw error (no location services &/or internet)
         return false
     }
     
@@ -56,7 +55,7 @@ class CoreLocationManager: NSObject, CLLocationManagerDelegate {
         default: //access is Undetermined, Denied, or Restricted
             print("Access was DENIED for location services! Stopping updates...")
             locationManager.stopUpdatingLocation() //stop updating location (no access)
-            reportAccessErrorForService(.CoreLocation) //throw CL error
+            // indicate to user to connect to Location Services
         }
     }
     
@@ -65,12 +64,10 @@ class CoreLocationManager: NSObject, CLLocationManagerDelegate {
             //Make sure the timeStamp of the location is recent (< 30 seconds old):
             let eventDate: Date = location.timestamp
             let timeDifference = eventDate.timeIntervalSinceNow
-            if (abs(timeDifference)) < 30 { //set limit to < 30 seconds
+            if (abs(timeDifference)) < 30 { // set limit to < 30 seconds
                 let latitude = location.coordinate.latitude
                 let longitude = location.coordinate.longitude
                 print("Latitude: [\(latitude)]. Longitude: [\(longitude)].")
-                let notification = Notification(name: Notification.Name(rawValue: BMN_Notification_CoreLocationManager_LocationDidChange), object: nil, userInfo: [BMN_CoreLocationManager_LatitudeKey: latitude, BMN_CoreLocationManager_LongitudeKey: longitude]) //pass latitude & longitude -> observer
-                NotificationCenter.default.post(notification)
                 locationManager.stopUpdatingLocation() //end updating after receiving 1 location!
             }
         }
@@ -78,7 +75,6 @@ class CoreLocationManager: NSObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { //sometimes thrown when there is no internet connection
         print("[locationManager] Did fail w/ error! Error: \(error).")
-        reportAccessErrorForService(.Internet) //internet issue
     }
     
 }
