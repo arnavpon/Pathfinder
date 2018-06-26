@@ -6,12 +6,7 @@
 // Check network connection status
 
 import Foundation
-import CoreTelephony
 import SystemConfiguration
-
-enum ConnectionType: String {
-    case None="None", WiFi="Wi-Fi", LTE="LTE", ThreeG="3G"
-}
 
 struct Network {
     static var reachability: Reachability?
@@ -77,24 +72,6 @@ class Reachability {
         return true
         #endif
     }()
-    
-    // MARK: - LTE
-    
-    func getConnectionType() -> ConnectionType {  // doesn't work!
-        let telephonyInfo = CTTelephonyNetworkInfo()
-        let currentConnection = telephonyInfo.currentRadioAccessTechnology
-        if let connection = currentConnection {
-            switch (connection) {
-            case CTRadioAccessTechnologyLTE:  // LTE connection
-                return ConnectionType.LTE
-            case CTRadioAccessTechnologyWCDMA:  // 3G connection
-                return ConnectionType.ThreeG
-            default:
-                break
-            }
-        }
-        return ConnectionType.None
-    }
     
 }
 

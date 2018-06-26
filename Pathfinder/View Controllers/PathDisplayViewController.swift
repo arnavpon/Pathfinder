@@ -13,8 +13,10 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
     @IBOutlet weak var pathTable: UITableView!
     
-    var pathList = [Path]()  // tableView data source
     var intelligentAgent: OptimalPathSearch?  // performs search
+    var totalPathLength: Double?  // tableView data source
+    var pathList = [String]()  // tableView data source
+    var pathDistances = [Double]()  // distances from point to point on optimal path
     
     // MARK: - View Controller Methods
     
@@ -29,8 +31,10 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
         activityIndicator.startAnimating()  // spin before computing
         
         // Perform search & update UI
-        if let agent = self.intelligentAgent {
+        if let agent = self.intelligentAgent {  // do this async, then update UI
             self.pathList = agent.computeOptimalPath()  // update data source
+            self.pathDistances = agent.getDistancesAlongPath()
+            self.totalPathLength = agent.getOptimalPathLength()  // get length for optimal path
             pathTable.delegate = self
             pathTable.dataSource = self  // setting source will refresh UI
         }
@@ -82,17 +86,15 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         if (indexPath.section == 0) {  // path display
-            cell.textLabel?.text = "\(indexPath.row + 1)) " + pathList[indexPath.row].location
+            cell.textLabel?.text = "\(indexPath.row + 1)) " + pathList[indexPath.row]
             cell.textLabel?.numberOfLines = 3
-            cell.detailTextLabel?.text = "\(pathList[indexPath.row].distanceFromPrevious) miles"
+            cell.detailTextLabel?.text = "\(pathDistances[indexPath.row]) miles"
             cell.detailTextLabel?.textColor = UIColor.blue
         } else {  // cumulative distance
-            var total = 0.0
-            for path in pathList {
-                total += path.distanceFromPrevious
+            if let length = self.totalPathLength {
+                cell.textLabel?.text = "\(length) miles"
+                cell.detailTextLabel?.text = nil  // no detail
             }
-            cell.textLabel?.text = "\(total) miles"
-            cell.detailTextLabel?.text = nil
         }
         return cell
     }

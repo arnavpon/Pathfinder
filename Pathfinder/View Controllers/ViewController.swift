@@ -72,7 +72,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         print("\nIs location unique?")
         var copy = places  // make mutable copy
         let selection = copy.remove(at: selectionIndex)  // remove place from array
-        for place in places {  // iterate through REMAINING places
+        for place in copy {  // iterate through REMAINING places
             print(place.attributedPrimaryText.string)
             if (place.attributedPrimaryText.string.range(of: selection.attributedPrimaryText.string) != nil) {  // check if selection name is WHOLLY contained in other place name
                 print("NOT unique")
@@ -127,7 +127,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "locationCell", for: indexPath)
-            cell.textLabel?.text = locationList[indexPath.row].name
+            cell.textLabel?.text = locationList[indexPath.row].primaryName
             return cell
         }
     }
@@ -135,17 +135,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView == searchResultsTable {  // add selection to locationList
             if isFiltering() {  // make sure search bar is active
-                let isUnique = isLocationUnique(selectionIndex: indexPath.row, places: filteredLocations)  // check if location is unique
-                if (isUnique) {  // UNIQUE - init Place w/ FULL name
-                    locationList.append(Place(name: filteredLocations[indexPath.row].attributedFullText.string, isUnique: isUnique))
-                    locationList.last!.findPlaceNearLocation(location: self.currentLocation!, completion: { (coordinates) in
-                        //
-                    })
-                } else { // NOT unique - init Place w/ PRIMARY name
-                    locationList.append(Place(name: filteredLocations[indexPath.row].attributedPrimaryText.string, isUnique: isUnique))
-                    locationList.last!.findPlaceNearLocation(location: self.currentLocation!, completion: { (coordinates) in
-                        //
-                    })
+                locationList.append(Place(name: filteredLocations[indexPath.row], isUnique: isLocationUnique(selectionIndex: indexPath.row, places: filteredLocations)))
+                locationList.last!.findPlacesNearLocation(location: self.currentLocation!) { (coords) in
+                    // ***
                 }
                 locationTable.reloadData()  // update UI
                 searchController.searchBar.text = nil  // clear text in search bar
@@ -213,7 +205,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if !(self.locationList.isEmpty) {
             if let current = currentLocation {
                 self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: locationList, returnToStart: returnToStart) // initialize intelligent agent
-                performSegue(withIdentifier: "showPathDisplayVC", sender: nil)  // move to next page
+                if self.shouldPerformSegue(withIdentifier: "showPathDisplayVC", sender: nil) {
+                    performSegue(withIdentifier: "showPathDisplayVC", sender: nil)  // move to next page
+                }
             }
         }
     }
@@ -257,6 +251,37 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     // MARK: - Navigation
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        do {
+            let connected = try Reachability()?.isConnectedToNetwork  // check for network
+            if (connected == true) {  // connected to network
+                var shouldSegue: Bool = true
+                for place in self.locationList {
+                    if (place.isUnique) {  // get coords for place
+                        
+                    } else {  // find up to the 5 nearest matches & store somehow
+                        
+                    }
+                    place.getCoordinatesForPlace { (coords) in
+                        if (coords == nil) {  // stop segue if any Place coordinates are not found
+                            shouldSegue = false  // set blocker
+                        }
+                    }
+                }
+                return shouldSegue  // *** probably won't work - blocking even when conn exists
+            } else {  // NOT connected to network
+                let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                let controller = UIAlertController(title: "No Internet Connection", message: "Please connect to the internet to find the optimal path.", preferredStyle: UIAlertControllerStyle.alert)
+                controller.addAction(ok)
+                self.present(controller, animated: true, completion: nil)
+                return false  // block segue
+            }
+        } catch let error {
+            print("Error - \(error.localizedDescription)")
+        }
+        return true
+    }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destination = segue.destination as! PathDisplayViewController

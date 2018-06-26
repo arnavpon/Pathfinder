@@ -5,10 +5,4 @@
 
 import Foundation
 
-typealias GeoLocation = (Double, Double)
-
-func getEuclideanDistance(firstLocation: GeoLocation, secondLocation: GeoLocation) -> Double {
-    let (x1, y1) = firstLocation
-    let (x2, y2) = secondLocation
-    return pow((pow((x2 - x1), 2.0) + pow((y2-y1), 2.0)), 0.5)  // compute distance
-}
+let CONSTANT_API_KEY = "AIzaSyAtnfYd3rk2iP48WofSdi2AKktoyQ_8jJ0"
