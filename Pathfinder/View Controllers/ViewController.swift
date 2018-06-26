@@ -230,7 +230,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location manager failed w/ error: \(error.localizedDescription)")
+        print("Location mgr failed w/ error: \(error.localizedDescription)")
     }
     
     func getCurrentPlace() {  // Google Places method to obtain current location
