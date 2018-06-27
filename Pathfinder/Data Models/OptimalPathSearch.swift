@@ -30,13 +30,17 @@ class OptimalPathSearch {
     }
     
     func checkAllLocationsHaveCoordinates() -> Bool {  // returns True if ALL places have coords
+        print("\nCoordinates check...")
         for locations in locationList {
             for location in locations {
+                print("location: \(location.primaryName)")
                 if (location.coordinates == nil) {
+                    print("Missing coordinates!\n")
                     return false  // terminate
                 }
             }
         }
+        print("All coordinates present!")
         return true
     }
     

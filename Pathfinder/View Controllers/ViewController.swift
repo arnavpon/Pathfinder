@@ -247,23 +247,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: - Navigation
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
-        do {  // *make sure ALL Place objects have set coordinates by time agent starts work!*
+        do {  // *request coordinates for all Place objects before agent starts search!*
             let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
             if let current = currentLocation {  // make sure current location exists
                 if let connected = try Reachability()?.isConnectedToNetwork {  // check for network
                     if (connected) {  // connected to network
-                        print("\n\nConnected to network, getting coords...")
                         var fullLocations: [[Place]] = []  // locations passed to intelligent agent
                         for place in self.locationList {
                             var temp: [Place] = []
                             if (place.isUnique) { // add as-is to return object
-                                place.getCoordinatesForPlace { (_) in
-                                    print("\nInside closure 1!\n")
-                                }  // get coords for place
+                                place.getCoordinatesForPlace { (_) in }  // get coords for place
                                 temp.append(place)
                             } else {  // find up to the 5 nearest matching Place objects
                                 place.findPlacesNearLocation(location: current) { (places) in
-                                    print("\nInside closure 2!\n")
                                     var counter = 0  // keeps track of places
                                     for p in places {
                                         if (counter < 5) {  // limit to 5 d/a places
@@ -275,8 +271,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                             }
                             fullLocations.append(temp)  // add temp list -> return object
                         }
-                        print("\nOutside closure!\n")
-                        // *** not going to work - will return before full list is made!
+                        
+                        // *** fullLocations doesn't exist b/c it is async, so agent has no locs!
+                        // need to prevent init until at least all places are initialized
+                        // how to block?
+                        
                         self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: fullLocations, returnToStart: returnToStart) // init intelligent agent
                     } else {  // not connected to network - send alert
                         let controller = UIAlertController(title: "No Internet Connection", message: "Please connect to the internet to find the optimal path.", preferredStyle: UIAlertControllerStyle.alert)

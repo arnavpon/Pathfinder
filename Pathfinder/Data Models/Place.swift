@@ -67,7 +67,6 @@ class Place: Hashable {
     func findPlacesNearLocation(location: CLLocationCoordinate2D, completion: @escaping ([Place]) -> Void) {  // search for nearby locations of NON-unique places
         let encodedName = primaryName.replacingOccurrences(of: " ", with: "%20")  // encode spaces
         let searchURL = URL(string: "json?location=\(location.latitude),\(location.longitude)&rankby=distance&keyword=\(encodedName)&key=\(CONSTANT_API_KEY)", relativeTo: baseSearchURL)!
-        print("Searching \(searchURL.absoluteString)...")
         let connection = NetworkConnection(url: searchURL)  // initialize network object
         connection.downloadJSONFromURL { (data) in
             var matchingLocations = [Place]()  // return object
@@ -81,7 +80,7 @@ class Place: Hashable {
                         }
                     }
                     if let result = result as? [String: AnyObject], let placeID = result["place_id"] as? String {
-                        print("[ID]: \(placeID)\n")  // do nothing
+                        //print("[ID]: \(placeID)\n")  // do nothing
                     }
                 }
             }
