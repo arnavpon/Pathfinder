@@ -7,16 +7,16 @@
 
 import UIKit
 import GooglePlaces
+import SystemConfiguration
 
 class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
     @IBOutlet weak var pathTable: UITableView!
+    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
     
     var intelligentAgent: OptimalPathSearch?  // performs search
-    var totalPathLength: Double?  // tableView data source
-    var pathList = [String]()  // tableView data source
-    var pathDistances = [Double]()  // distances from point to point on optimal path
+    var shortestPath: [Node] = []
+    var shortestPathDistance: Double = 0.0
     
     // MARK: - View Controller Methods
     
@@ -30,11 +30,37 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
         activityIndicator.hidesWhenStopped = true  // hide if not spinning
         activityIndicator.startAnimating()  // spin before computing
         
-        // Perform search & update UI
+        // Perform search & update UI:
         if let agent = self.intelligentAgent {  // do this async, then update UI
-            self.pathList = agent.computeOptimalPath()  // update data source
-            self.pathDistances = agent.getDistancesAlongPath()
-            self.totalPathLength = agent.getOptimalPathLength()  // get length for optimal path
+            var coordsAvailable = false
+            while !(coordsAvailable) { // do nothing until ALL Place objects have assigned coordinates
+                sleep(UInt32(0.10))  // sleep for 1/10 of a second
+                coordsAvailable = agent.checkAllLocationsHaveCoordinates()  // repeat check
+            }
+            (shortestPath, shortestPathDistance) = agent.computeOptimalPath()  // get shortest path
+            
+            // Update with true distances
+            var temp: [Node] = []  // for Nodes w/ true distances
+            for (i, node) in shortestPath.enumerated() {
+                if i == 0 {  // first element, compute distance -> start
+                    DistanceAPIHelper(origin: agent.getStartLocation(), destination: node.place.coordinates!).getDistanceBetweenLocations { (distance) in
+                        if let dist = distance {
+                            let new = Node(place: node.place, distance: dist)
+                            temp.append(new)  // update with true distance
+                        }
+                    }
+                } else {  // compute distance between current node & previous node
+                    DistanceAPIHelper(origin: shortestPath[i-1].place.coordinates!, destination: node.place.coordinates!).getDistanceBetweenLocations { (distance) in
+                        if let dist = distance {
+                            let new = Node(place: node.place, distance: dist)
+                            temp.append(new)  // update with true distance
+                        }
+                    }
+                }
+            }
+            // *** won't work b/c will return before true Nodes are added to source!
+            self.shortestPath = temp  // update data source w/ accurate distances
+            
             pathTable.delegate = self
             pathTable.dataSource = self  // setting source will refresh UI
         }
@@ -68,8 +94,8 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (section == 0) {  // display paths
-            return pathList.count
+        if (section == 0) {  // display paths + between distances
+            return shortestPath.count
         } else {  // display cumulative distance
             return 1
         }
@@ -86,15 +112,13 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         if (indexPath.section == 0) {  // path display
-            cell.textLabel?.text = "\(indexPath.row + 1)) " + pathList[indexPath.row]
+            cell.textLabel?.text = "\(indexPath.row + 1)) " + shortestPath[indexPath.row].place.fullName
             cell.textLabel?.numberOfLines = 3
-            cell.detailTextLabel?.text = "\(pathDistances[indexPath.row]) miles"
+            cell.detailTextLabel?.text = "\(shortestPath[indexPath.row].distanceToPreviousNode) miles"
             cell.detailTextLabel?.textColor = UIColor.blue
         } else {  // cumulative distance
-            if let length = self.totalPathLength {
-                cell.textLabel?.text = "\(length) miles"
-                cell.detailTextLabel?.text = nil  // no detail
-            }
+            cell.textLabel?.text = "\(shortestPathDistance) miles"
+            cell.detailTextLabel?.text = nil  // no detail
         }
         return cell
     }

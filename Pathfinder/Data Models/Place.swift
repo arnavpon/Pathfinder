@@ -7,6 +7,19 @@ import Foundation
 import CoreLocation
 import GooglePlaces
 
+struct Node {  // a 'Node' represents an object in the search Path
+    
+    let place: Place
+    let distanceToPreviousNode: Double
+    
+    // MARK: - Initializers
+    
+    init(place: Place, distance: Double) {
+        self.place = place
+        self.distanceToPreviousNode = distance
+    }
+}
+
 class Place: Hashable {
     
     let primaryName: String  // PRIMARY name representation of location
@@ -74,6 +87,7 @@ class Place: Hashable {
             }
             if (matchingLocations.isEmpty) { // NO matches found - look up coordinates for self
                 self.getCoordinatesForPlace(completion: { (coordinates) in })
+                completion([self])  // return only the current Place
             } else {  // matches found
                 completion(matchingLocations)  // return found Place objects
             }

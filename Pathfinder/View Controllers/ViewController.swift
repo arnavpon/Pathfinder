@@ -136,9 +136,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if tableView == searchResultsTable {  // add selection to locationList
             if isFiltering() {  // make sure search bar is active
                 locationList.append(Place(name: filteredLocations[indexPath.row], isUnique: isLocationUnique(selectionIndex: indexPath.row, places: filteredLocations)))
-                locationList.last!.findPlacesNearLocation(location: self.currentLocation!) { (coords) in
-                    // ***
-                }
                 locationTable.reloadData()  // update UI
                 searchController.searchBar.text = nil  // clear text in search bar
                 searchController.searchBar.resignFirstResponder()  // exit search bar
@@ -203,11 +200,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     @IBAction func determinePathBtnWasClicked(_ sender: Any) {
         if !(self.locationList.isEmpty) {
-            if let current = currentLocation {
-                self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: locationList, returnToStart: returnToStart) // initialize intelligent agent
-                if self.shouldPerformSegue(withIdentifier: "showPathDisplayVC", sender: nil) {
-                    performSegue(withIdentifier: "showPathDisplayVC", sender: nil)  // move to next page
-                }
+            if self.shouldPerformSegue(withIdentifier: "showPathDisplayVC", sender: nil) {
+                performSegue(withIdentifier: "showPathDisplayVC", sender: nil)  // move to next page
             }
         }
     }
@@ -253,26 +247,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: - Navigation
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
-        do {
-            let connected = try Reachability()?.isConnectedToNetwork  // check for network
-            if (connected == true) {  // connected to network
-                var shouldSegue: Bool = true
-                for place in self.locationList {
-                    if (place.isUnique) {  // get coords for place
-                        
-                    } else {  // find up to the 5 nearest matches & store somehow
-                        
-                    }
-                    place.getCoordinatesForPlace { (coords) in
-                        if (coords == nil) {  // stop segue if any Place coordinates are not found
-                            shouldSegue = false  // set blocker
+        do {  // *make sure ALL Place objects have set coordinates by time agent starts work!*
+            let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+            if let current = currentLocation {  // make sure current location exists
+                if let connected = try Reachability()?.isConnectedToNetwork {  // check for network
+                    if (connected) {  // connected to network
+                        print("\n\nConnected to network, getting coords...")
+                        var fullLocations: [[Place]] = []  // locations passed to intelligent agent
+                        for place in self.locationList {
+                            var temp: [Place] = []
+                            if (place.isUnique) { // add as-is to return object
+                                place.getCoordinatesForPlace { (_) in
+                                    print("\nInside closure 1!\n")
+                                }  // get coords for place
+                                temp.append(place)
+                            } else {  // find up to the 5 nearest matching Place objects
+                                place.findPlacesNearLocation(location: current) { (places) in
+                                    print("\nInside closure 2!\n")
+                                    var counter = 0  // keeps track of places
+                                    for p in places {
+                                        if (counter < 5) {  // limit to 5 d/a places
+                                            temp.append(p)  // add place to temp list
+                                            counter += 1  // increment
+                                        }
+                                    }
+                                }
+                            }
+                            fullLocations.append(temp)  // add temp list -> return object
                         }
+                        print("\nOutside closure!\n")
+                        // *** not going to work - will return before full list is made!
+                        self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: fullLocations, returnToStart: returnToStart) // init intelligent agent
+                    } else {  // not connected to network - send alert
+                        let controller = UIAlertController(title: "No Internet Connection", message: "Please connect to the internet to find the optimal path.", preferredStyle: UIAlertControllerStyle.alert)
+                        controller.addAction(ok)
+                        self.present(controller, animated: true, completion: nil)
+                        return false  // block segue
                     }
                 }
-                return shouldSegue  // *** probably won't work - blocking even when conn exists
-            } else {  // NOT connected to network
-                let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
-                let controller = UIAlertController(title: "No Internet Connection", message: "Please connect to the internet to find the optimal path.", preferredStyle: UIAlertControllerStyle.alert)
+            } else {  // no GPS data - send alert
+                let controller = UIAlertController(title: "Current Location Required", message: "Please turn on Location Services before proceeding.", preferredStyle: UIAlertControllerStyle.alert)
                 controller.addAction(ok)
                 self.present(controller, animated: true, completion: nil)
                 return false  // block segue
