@@ -24,7 +24,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var placesClient: GMSPlacesClient!  // handles Google Places SDK logic
     var locationList = [Place]() { // list of places selected to visit
         didSet {
-            if (locationList.count > 2) {  // enable btn after 2+ locations are added
+            if (locationList.count >= 2) {  // enable btn after 2+ locations are added
                 determinePathBtn.isEnabled = true
             } else {  // disable
                 determinePathBtn.isEnabled = false
@@ -252,14 +252,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             if let current = currentLocation {  // make sure current location exists
                 if let connected = try Reachability()?.isConnectedToNetwork {  // check for network
                     if (connected) {  // connected to network
-                        var fullLocations: [[Place]] = []  // locations passed to intelligent agent
-                        for place in self.locationList {
-                            var temp: [Place] = []
+                        var fullLocations: [[Place]] = []
+                        for _ in self.locationList {
+                            fullLocations.append([])  // initialize w/ empty value @ each index
+                        }
+                        self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: fullLocations, returnToStart: returnToStart) // init intelligent agent
+                        for (i, place) in self.locationList.enumerated() {
                             if (place.isUnique) { // add as-is to return object
                                 place.getCoordinatesForPlace { (_) in }  // get coords for place
-                                temp.append(place)
+                                self.intelligentAgent!.updateLocationListAtIndex(index: i, places: [place])  // update locationList
                             } else {  // find up to the 5 nearest matching Place objects
                                 place.findPlacesNearLocation(location: current) { (places) in
+                                    var temp = [Place]()
                                     var counter = 0  // keeps track of places
                                     for p in places {
                                         if (counter < 5) {  // limit to 5 d/a places
@@ -267,16 +271,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                                             counter += 1  // increment
                                         }
                                     }
+                                    self.intelligentAgent?.updateLocationListAtIndex(index: i, places: temp)  // update agent w/ Place objects from API
                                 }
                             }
-                            fullLocations.append(temp)  // add temp list -> return object
                         }
-                        
-                        // *** fullLocations doesn't exist b/c it is async, so agent has no locs!
-                        // need to prevent init until at least all places are initialized
-                        // how to block?
-                        
-                        self.intelligentAgent = OptimalPathSearch(currentLoc: current, locations: fullLocations, returnToStart: returnToStart) // init intelligent agent
                     } else {  // not connected to network - send alert
                         let controller = UIAlertController(title: "No Internet Connection", message: "Please connect to the internet to find the optimal path.", preferredStyle: UIAlertControllerStyle.alert)
                         controller.addAction(ok)

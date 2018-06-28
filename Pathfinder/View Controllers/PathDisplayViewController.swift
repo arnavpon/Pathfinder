@@ -12,57 +12,66 @@ import SystemConfiguration
 class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var pathTable: UITableView!
-    let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var intelligentAgent: OptimalPathSearch?  // performs search
-    var shortestPath: [Node] = []
+    var shortestPath: [Node] = [] {
+        didSet {
+            shortestPathDistance = 0.0
+            for node in shortestPath {  // update total path distance
+                shortestPathDistance += node.distanceToPreviousNode
+            }
+            DispatchQueue.main.async {
+                self.pathTable.reloadData()  // update UI on main
+            }
+        }
+    }
     var shortestPathDistance: Double = 0.0
     
     // MARK: - View Controller Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Activity Indicator
-        let width: CGFloat = 40.0
-        self.view.addSubview(activityIndicator)  // add to main view
-        activityIndicator.frame = CGRect(x: (self.view.frame.midX - width), y: (self.view.frame.midY - width), width: width, height: width)  // center indicator in view
-        activityIndicator.hidesWhenStopped = true  // hide if not spinning
+        pathTable.delegate = self
+        pathTable.dataSource = self  // setting source will refresh UI
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         activityIndicator.startAnimating()  // spin before computing
-        
-        // Perform search & update UI:
-        if let agent = self.intelligentAgent {  // do this async, then update UI
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if let agent = self.intelligentAgent {  // perform search & update UI
+            var placesAvailable = false
+            while !(placesAvailable) { // do nothing until ALL Place objects are set
+                sleep(UInt32(1))  // sleep for 1 second
+                placesAvailable = agent.checkAllPlacesAvailable()  // repeat check
+            }
+            
             var coordsAvailable = false
             while !(coordsAvailable) { // do nothing until ALL Place objects have assigned coordinates
-                sleep(UInt32(0.10))  // sleep for 1/10 of a second
+                sleep(UInt32(1))  // sleep for 1 second
                 coordsAvailable = agent.checkAllLocationsHaveCoordinates()  // repeat check
             }
-            (shortestPath, shortestPathDistance) = agent.computeOptimalPath()  // get shortest path
             
-            // Update with true distances
-            var temp: [Node] = []  // for Nodes w/ true distances
+            // Update the shortestPath nodes with true distances:
+            (shortestPath, shortestPathDistance) = agent.computeOptimalPath()  // get shortest path
             for (i, node) in shortestPath.enumerated() {
                 if i == 0 {  // first element, compute distance -> start
                     DistanceAPIHelper(origin: agent.getStartLocation(), destination: node.place.coordinates!).getDistanceBetweenLocations { (distance) in
-                        if let dist = distance {
-                            let new = Node(place: node.place, distance: dist)
-                            temp.append(new)  // update with true distance
+                        if let dist = distance {  // update with true distance
+                            self.shortestPath[i] = Node(place: node.place, distance: dist)
                         }
                     }
                 } else {  // compute distance between current node & previous node
                     DistanceAPIHelper(origin: shortestPath[i-1].place.coordinates!, destination: node.place.coordinates!).getDistanceBetweenLocations { (distance) in
-                        if let dist = distance {
-                            let new = Node(place: node.place, distance: dist)
-                            temp.append(new)  // update with true distance
+                        if let dist = distance {  // update with true distance
+                            self.shortestPath[i] = Node(place: node.place, distance: dist)
                         }
                     }
                 }
             }
-            // *** won't work b/c will return before true Nodes are added to source!
-            self.shortestPath = temp  // update data source w/ accurate distances
-            
-            pathTable.delegate = self
-            pathTable.dataSource = self  // setting source will refresh UI
+            self.pathTable.reloadData()  // update UI
         }
         activityIndicator.stopAnimating()  // hide indicator
     }
@@ -95,7 +104,7 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (section == 0) {  // display paths + between distances
-            return shortestPath.count
+            return (shortestPath.count + 1)
         } else {  // display cumulative distance
             return 1
         }
@@ -112,10 +121,15 @@ class PathDisplayViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         if (indexPath.section == 0) {  // path display
-            cell.textLabel?.text = "\(indexPath.row + 1)) " + shortestPath[indexPath.row].place.fullName
-            cell.textLabel?.numberOfLines = 3
-            cell.detailTextLabel?.text = "\(shortestPath[indexPath.row].distanceToPreviousNode) miles"
-            cell.detailTextLabel?.textColor = UIColor.blue
+            if (indexPath.row == 0) {
+                cell.textLabel?.text = "Current Location"
+                cell.detailTextLabel?.text = "-----"
+            } else {
+                cell.textLabel?.text = "\(indexPath.row)) " + shortestPath[indexPath.row-1].place.fullName
+                cell.textLabel?.numberOfLines = 3
+                cell.detailTextLabel?.text = "\(shortestPath[indexPath.row-1].distanceToPreviousNode) miles from last stop"
+                cell.detailTextLabel?.textColor = UIColor.blue
+            }
         } else {  // cumulative distance
             cell.textLabel?.text = "\(shortestPathDistance) miles"
             cell.detailTextLabel?.text = nil  // no detail

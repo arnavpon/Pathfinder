@@ -11,8 +11,8 @@ import CoreLocation
 class OptimalPathSearch {
     
     private let currentLocation: CLLocationCoordinate2D
-    private let locationList: [[Place]]  // @ each index: 1 entry for unique, > 1 entry for non-unique
     private let returnToStart: Bool  // should path return to starting point?
+    private var locationList: [[Place]]  // @ each index: 1 entry for unique, > 1 entry for non-unique
     private var shortestPath: [Node] = []  // optimal path
     private var shortestPathLength: Double = Double.infinity  // init w/ max possible distance
     
@@ -25,15 +25,19 @@ class OptimalPathSearch {
         self.returnToStart = returnToStart
     }
     
+    func updateLocationListAtIndex(index: Int, places: [Place]) {  // called by Closure in VC
+        self.locationList[index] = places  // update value @ specified index
+        print("Updated LL w/ \(places.count) places @ index \(index).")
+    }
+    
     func getStartLocation() -> CLLocationCoordinate2D {  // getter
         return self.currentLocation
     }
     
-    func checkAllLocationsHaveCoordinates() -> Bool {  // returns True if ALL places have coords
+    func checkAllLocationsHaveCoordinates() -> Bool {  // returns True if EACH Place has coords
         print("\nCoordinates check...")
         for locations in locationList {
             for location in locations {
-                print("location: \(location.primaryName)")
                 if (location.coordinates == nil) {
                     print("Missing coordinates!\n")
                     return false  // terminate
@@ -42,6 +46,17 @@ class OptimalPathSearch {
         }
         print("All coordinates present!")
         return true
+    }
+    
+    func checkAllPlacesAvailable() -> Bool {  // safety check before running search
+        print("\nPlaces check...")
+        for (i, locations) in locationList.enumerated() {
+            if (locations.isEmpty) {  // return false if any inner list of locations is empty
+                print("Missing place @ index \(i)")
+                return false
+            }
+        }
+        return true  // default
     }
     
     // MARK: - Search Methods

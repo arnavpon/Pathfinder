@@ -162,17 +162,28 @@
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
+                            <activityIndicatorView contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="YOr-da-T0z">
+                                <rect key="frame" x="167.5" y="313.5" width="40" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="40" id="UZu-IS-EiZ"/>
+                                    <constraint firstAttribute="height" constant="40" id="m10-7k-Qb0"/>
+                                </constraints>
+                                <color key="color" cocoaTouchSystemColor="darkTextColor"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="aQp-LO-tyv" firstAttribute="leading" secondItem="3QO-sR-AAR" secondAttribute="leading" id="75Z-0I-oZV"/>
+                            <constraint firstItem="YOr-da-T0z" firstAttribute="centerX" secondItem="eKg-Wh-UcQ" secondAttribute="centerX" id="Aem-QM-THj"/>
                             <constraint firstItem="aQp-LO-tyv" firstAttribute="trailing" secondItem="3QO-sR-AAR" secondAttribute="trailing" id="kd5-sc-T5B"/>
                             <constraint firstItem="aQp-LO-tyv" firstAttribute="top" secondItem="3QO-sR-AAR" secondAttribute="top" id="kwn-0V-2dh"/>
                             <constraint firstItem="3QO-sR-AAR" firstAttribute="bottom" secondItem="aQp-LO-tyv" secondAttribute="bottom" id="s4J-QZ-orD"/>
+                            <constraint firstItem="YOr-da-T0z" firstAttribute="centerY" secondItem="eKg-Wh-UcQ" secondAttribute="centerY" id="ukm-yt-afH"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="3QO-sR-AAR"/>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="YOr-da-T0z" id="4ET-V9-bq4"/>
                         <outlet property="pathTable" destination="aQp-LO-tyv" id="Qsn-xO-bfW"/>
                     </connections>
                 </viewController>

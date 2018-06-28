@@ -76,17 +76,17 @@ class Place: Hashable {
                     if let result = result as? [String: AnyObject], let vicinity = result["vicinity"] as? String, let geometry = result["geometry"] as? [String: AnyObject], let location = geometry["location"] as? [String: Double], let latitude = location["lat"], let longitude = location["lng"], let resultName = result["name"] as? String {
                         print("[\(latitude), \(longitude)] \(resultName): \(vicinity)\n")
                         if resultName == self.primaryName {  // EXACT match - add to return object
-                            matchingLocations.append(Place(primary: resultName, full: vicinity, coords: CLLocationCoordinate2D(latitude: latitude, longitude: longitude)))
+                            matchingLocations.append(Place(primary: resultName, full: "\(resultName), \(vicinity)", coords: CLLocationCoordinate2D(latitude: latitude, longitude: longitude)))
                         }
                     }
-                    if let result = result as? [String: AnyObject], let placeID = result["place_id"] as? String {
+                    if let result = result as? [String: AnyObject], let _ = result["place_id"] as? String {
                         //print("[ID]: \(placeID)\n")  // do nothing
                     }
                 }
             }
             if (matchingLocations.isEmpty) { // NO matches found - look up coordinates for self
                 self.getCoordinatesForPlace(completion: { (coordinates) in })
-                completion([self])  // return only the current Place
+                completion([self])  // return ONLY the initial Place
             } else {  // matches found
                 completion(matchingLocations)  // return found Place objects
             }
